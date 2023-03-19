@@ -60,6 +60,7 @@ class ProductResource extends Resource
                                 TextInput::make('sku')->maxLength(191),
                                 Select::make('gender')
                                     ->default('both')
+                                    ->default(Gender::UNISEX)
                                     ->disablePlaceholderSelection()
                                     ->options(Gender::ITEM_OPTIONS),
                                 Select::make('categories')
