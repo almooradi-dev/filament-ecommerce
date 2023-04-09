@@ -78,7 +78,7 @@ class Category extends Model
 			}
 		}
 
-		$thumbnailImagePath = $firstImagePath ? Storage::url($firstImagePath) : asset('assets\packages\vendor\filament-ecommerce\images\products\product-default-thumbnail-500x500.png');
+		$thumbnailImagePath = $firstImagePath ? Storage::url($firstImagePath) : asset('assets\packages\vendor\filament-ecommerce\images\categories\category-default-thumbnail-500x500.png');
 
 		return str_replace('\\', '/', $thumbnailImagePath);
 	}
