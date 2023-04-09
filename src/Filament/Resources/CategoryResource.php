@@ -53,7 +53,7 @@ class CategoryResource extends Resource
                     ->multiple(),
                 Select::make('parent_category_id')
                     ->label('Parent Category')
-                    // ->options(Category::where('id', '!=', '1')->get()->pluck('title', 'id')) // TODO: Important, to avoid infinite loop in case we selct the same cateogry (itself)
+                    // ->options(Category::where('id', '!=', '1')->get()->pluck('title', 'id')) // TODO: Important, to avoid infinite loop in case we select the same cateogry (itself)
                     ->options(Category::whereIsParent()->get()->pluck('title', 'id'))
                     ->searchable(),
                 Select::make('status')
@@ -62,7 +62,7 @@ class CategoryResource extends Resource
                     ->default(CategoryStatus::ACTIVE)
                     ->options(CategoryStatus::ALL),
                 FileUpload::make('image')
-                    ->directory('shop/categories')
+                    ->directory('filament-ecommerce/categories')
                     ->image()
                     ->enableOpen()
                     ->enableDownload()
