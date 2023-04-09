@@ -4,8 +4,10 @@ namespace Almooradi\FilamentEcommerce;
 
 use Almooradi\FilamentEcommerce\Filament\Resources\ProductResource;
 use Almooradi\FilamentEcommerce\Filament\Resources\CategoryResource;
+use Almooradi\FilamentEcommerce\Filament\Resources\ProductVariationResource;
 use Almooradi\FilamentEcommerce\Filament\Resources\VariationResource;
 use Filament\PluginServiceProvider;
+use Illuminate\Support\ServiceProvider;
 use Spatie\LaravelPackageTools\Package;
 
 class FilamentEcommerceServiceProvider extends PluginServiceProvider
@@ -14,6 +16,7 @@ class FilamentEcommerceServiceProvider extends PluginServiceProvider
 		ProductResource::class,
 		CategoryResource::class,
 		VariationResource::class,
+		ProductVariationResource::class,
 	];
 
 	public function configurePackage(Package $package): void
@@ -26,13 +29,16 @@ class FilamentEcommerceServiceProvider extends PluginServiceProvider
 	 * 
 	 * @return void
 	 */
-	// public function boot()
-	// {
-	// 	$this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+	public function boot()
+	{
+		parent::packageBooted();
 
-	// 	$this->publishes([
-	// 		__DIR__ . '/../assets' => public_path('assets/packages/vendor/filament-ecommerce'),
-	// 	], 'public');
-	// 	// php artisan vendor:publish --tag=public --force
-	// }
+		$this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+		$this->loadViewsFrom(__DIR__ . '/../resources/views', 'filament-ecommerce');
+
+		$this->publishes([
+			__DIR__ . '/../assets' => public_path('assets/packages/vendor/filament-ecommerce'),
+		], 'public');
+		// 	// php artisan vendor:publish --tag=public --force
+	}
 }

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Category extends Model
 {
@@ -55,4 +56,30 @@ class Category extends Model
     {
         return $this->belongsTo(Category::class, 'parent_category_id');
     }
+
+	/**
+	 * Get "thumbnail image" attribute
+	 *
+	 * @return null|string
+	 */
+	public function getThumbnailImageAttribute(): null|string
+	{
+		$firstImagePath = null;
+
+		$supported_image = ['gif', 'jpg', 'jpeg', 'png'];
+		foreach ($this->media_files ?? [] as $filePath) {
+			$ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+
+			if (in_array($ext, $supported_image)) {
+				if (Storage::exists($filePath)) {
+					$firstImagePath = $filePath;
+					break;
+				}
+			}
+		}
+
+		$thumbnailImagePath = $firstImagePath ? Storage::url($firstImagePath) : asset('assets\packages\vendor\filament-ecommerce\images\products\product-default-thumbnail-500x500.png');
+
+		return str_replace('\\', '/', $thumbnailImagePath);
+	}
 }
