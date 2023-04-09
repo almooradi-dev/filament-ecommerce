@@ -207,6 +207,25 @@ class Product extends Model
 	}
 
 	/**
+	 * Get the media files that exists in the storage only
+	 *
+	 * @return array
+	 */
+	public function getExistedMediaFilesAttribute(): array
+	{
+		$existedMediaFiles = [];
+
+		$supported_image = ['gif', 'jpg', 'jpeg', 'png'];
+		foreach ($this->media_files ?? [] as $filePath) {
+			if (Storage::exists($filePath)) {
+				$existedMediaFiles[] = $filePath;
+			}
+		}
+
+		return $existedMediaFiles;
+	}
+
+	/**
 	 * Check if product is published or not
 	 *
 	 * @return boolean
