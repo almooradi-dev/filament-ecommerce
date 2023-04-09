@@ -2,95 +2,68 @@
 
 namespace Almooradi\FilamentEcommerce\Filament\Resources;
 
-use Almooradi\FilamentEcommerce\Constants\Gender;
 use Almooradi\FilamentEcommerce\Constants\ProductStatus;
-use Almooradi\FilamentEcommerce\Filament\Resources\ProductResource\Pages\CreateProduct;
-use Almooradi\FilamentEcommerce\Filament\Resources\ProductResource\Pages\EditProduct;
-use Almooradi\FilamentEcommerce\Filament\Resources\ProductResource\Pages\ListProducts;
-use Almooradi\FilamentEcommerce\Filament\Resources\ProductResource\Pages\ProductVariations;
+use Almooradi\FilamentEcommerce\Filament\Resources\ProductVariationResource\Pages\CreateProductVariation;
+use Almooradi\FilamentEcommerce\Filament\Resources\ProductVariationResource\Pages\EditProductVariation;
+use Almooradi\FilamentEcommerce\Filament\Resources\ProductVariationResource\Pages\ListProductVariations;
 use Almooradi\FilamentEcommerce\Models\Product\Product;
+use Almooradi\FilamentEcommerce\Models\Variation\Variation;
 use Closure;
-use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\MarkdownEditor;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Tabs\Tab;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Wizard\Step;
 use Filament\Resources\Form;
 use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
-class ProductResource extends Resource
+class ProductVariationResource extends Resource
 {
     protected static ?string $model = Product::class;
 
-    protected static ?string $navigationGroup = 'Shop';
+    protected static bool $shouldRegisterNavigation = false;
 
-    protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
-
-    protected static ?string $slug = 'shop/products';
+    protected static ?string $slug = 'shop/products/variations';
 
     public static function form(Form $form): Form
     {
+        $product = Product::find(request()->product);
+
+        $variationsSelects = [];
+        if ($product) {
+            $product->loadMissing('variations.values');
+            foreach ($product->variations as $variation) {
+                $variationsSelects[] = Select::make('variations.' . $variation->id)
+                    ->label($variation->name)
+                    ->required()
+                    ->options($variation->values->pluck('value', 'id'));
+            }
+        }
+
         return $form
             ->schema([
                 Tabs::make('Heading')
                     ->columnSpan('full')
                     ->tabs([
+                        Tab::make('Variations')
+                            ->schema($variationsSelects),
                         Tab::make('General')
                             ->schema([
-                                TextInput::make('title')
-                                    ->required()
-                                    ->reactive()
-                                    ->maxLength(191)
-                                    ->afterStateUpdated(function (Closure $set, $state) {
-                                        $set('slug', Str::slug($state));
-                                    })
-                                    ->autofocus(),
-                                TextInput::make('slug')
-                                    ->required()
-                                    ->unique(ignorable: fn (?Model $record) => $record)
-                                    ->maxLength(191),
+                                Select::make('parent_product_id')
+                                    ->relationship('parentProduct', 'title')
+                                    ->default($product?->id)
+                                    ->disabled(true),
                                 TextInput::make('sku')->maxLength(191),
-                                Select::make('gender')
-                                    ->default(Gender::UNISEX)
-                                    ->disablePlaceholderSelection()
-                                    ->options(Gender::ITEM_OPTIONS),
-                                Select::make('categories')
-                                    ->required()
-                                    ->multiple()
-                                    ->preload()
-                                    ->relationship('categories', 'title'),
-                                Select::make('show_in')
-                                    ->options([
-                                        'home' => 'Home',
-                                    ])
-                                    ->multiple(),
-                                ColorPicker::make('highlight_label_background_color'),
-                                ColorPicker::make('highlight_label_text_color'),
-                                TextInput::make('highlight_label_text')->maxLength(191),
                                 Select::make('status')
                                     ->disablePlaceholderSelection()
                                     ->required()
                                     ->default(ProductStatus::DRAFT)
                                     ->options(ProductStatus::ALL)
-                            ]),
-                        Tab::make('Content')
-                            ->schema([
-                                Textarea::make('short_description')
-                                    ->maxLength(300),
-                                MarkdownEditor::make('long_description')
-                                    ->fileAttachmentsDirectory('products')
                             ]),
                         Tab::make('Media')
                             ->schema([
@@ -158,37 +131,18 @@ class ProductResource extends Resource
                                     ->dehydrated(false)
                                     ->hidden(fn ($get) => !in_array($get('discount_type'), ['fixed', 'percentage'])),
                             ]),
-                        Tab::make('Variation')
-                            ->schema([
-                                Select::make('variations')
-                                    ->multiple()
-                                    ->searchable()
-                                    ->preload()
-                                    ->relationship('variations', 'name')
-                            ]),
                     ])
             ]);
     }
 
     public static function table(Table $table): Table
     {
-        // dd(Product::first()->variations());
         return $table
-            ->columns([
-                TextColumn::make('title')->words(7)->tooltip(fn (TextColumn $column): ?string => $column->getState())->searchable(),
-                TextColumn::make('categories')->formatStateUsing(fn (Collection | null $state): string => $state ? implode(', ', $state->pluck('title')->toArray()) : '')->searchable(),
-                TextColumn::make('gender')->formatStateUsing(fn (string | null $state): string => Gender::ITEM_OPTIONS[$state] ?? ''),
-                TextColumn::make('show_in')->formatStateUsing(fn (string | null $state): string => ucfirst($state)),
-            ])
+            ->columns([])
             ->filters([
                 //
             ])
             ->actions([
-                Action::make('variations')
-                    ->visible(fn (Product $record): bool => count($record->variations) > 0)
-                    ->url(fn (Product $record): string => route('filament.resources.' . ProductVariationResource::getSlug() . '.index', $record))
-                    ->icon('heroicon-o-color-swatch')
-                    ->color('success'),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
@@ -207,24 +161,21 @@ class ProductResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListProducts::route('/'),
-            'create' => CreateProduct::route('/create'),
-            'edit' => EditProduct::route('/{record}/edit'),
+            'index' => ListProductVariations::route('/{product}'),
+            'create' => CreateProductVariation::route('/{product}/create'),
+            'edit' => EditProductVariation::route('/{product}/{record}/edit'),
         ];
     }
 
-    private static function updateDiscountPrice(Closure $set, Closure $get)
+    public static function getUrl($name = 'index', $params = [], $isAbsolute = true): string
     {
-        $price = $get('price');
-        $discount_price = $get('price');
-        $discount_amount = $get('discount_amount');
-
-        if ($get('discount_type') == 'fixed') {
-            $discount_price = $price - $discount_amount;
-        } else if ($get('discount_type') == 'percentage') {
-            $discount_price = $price - $price * $discount_amount / 100;
+        // Add "product" parameter
+        if (!isset($params['product'])) {
+            $params['product'] = request()->product;
         }
 
-        $set('discount_price', $discount_price);
+        $routeBaseName = static::getRouteBaseName();
+
+        return route("{$routeBaseName}.{$name}", $params, $isAbsolute);
     }
 }
