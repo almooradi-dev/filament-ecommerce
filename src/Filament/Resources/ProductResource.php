@@ -7,6 +7,7 @@ use Almooradi\FilamentEcommerce\Constants\ProductStatus;
 use Almooradi\FilamentEcommerce\Filament\Resources\ProductResource\Pages\CreateProduct;
 use Almooradi\FilamentEcommerce\Filament\Resources\ProductResource\Pages\EditProduct;
 use Almooradi\FilamentEcommerce\Filament\Resources\ProductResource\Pages\ListProducts;
+use Almooradi\FilamentEcommerce\Filament\Resources\ProductResource\Pages\ProductVariations;
 use Almooradi\FilamentEcommerce\Models\Product\Product;
 use Closure;
 use Filament\Forms\Components\ColorPicker;
@@ -23,6 +24,7 @@ use Filament\Resources\Form;
 use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -35,6 +37,8 @@ class ProductResource extends Resource
     protected static ?string $navigationGroup = 'Shop';
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
+
+    protected static ?string $slug = 'shop/products';
 
     public static function form(Form $form): Form
     {
@@ -59,7 +63,6 @@ class ProductResource extends Resource
                                     ->maxLength(191),
                                 TextInput::make('sku')->maxLength(191),
                                 Select::make('gender')
-                                    ->default('both')
                                     ->default(Gender::UNISEX)
                                     ->disablePlaceholderSelection()
                                     ->options(Gender::ITEM_OPTIONS),
@@ -92,7 +95,7 @@ class ProductResource extends Resource
                         Tab::make('Media')
                             ->schema([
                                 FileUpload::make('media_files')
-                                    ->directory('shop/products')
+                                    ->directory('filament-ecommerce/products')
                                     ->acceptedFileTypes(['image/*', 'video/mp4', 'video/x-m4v', 'video/*'])
                                     ->enableOpen()
                                     ->enableDownload()
@@ -172,8 +175,8 @@ class ProductResource extends Resource
         // dd(Product::first()->variations());
         return $table
             ->columns([
-                TextColumn::make('title'),
-                TextColumn::make('categories')->formatStateUsing(fn (Collection | null $state): string => $state ? implode(', ', $state->pluck('title')->toArray()) : ''),
+                TextColumn::make('title')->words(7)->tooltip(fn (TextColumn $column): ?string => $column->getState())->searchable(),
+                TextColumn::make('categories')->formatStateUsing(fn (Collection | null $state): string => $state ? implode(', ', $state->pluck('title')->toArray()) : '')->searchable(),
                 TextColumn::make('gender')->formatStateUsing(fn (string | null $state): string => Gender::ITEM_OPTIONS[$state] ?? ''),
                 TextColumn::make('show_in')->formatStateUsing(fn (string | null $state): string => ucfirst($state)),
             ])
