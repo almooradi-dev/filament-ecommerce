@@ -189,12 +189,12 @@ class Product extends Model
 	{
 		$firstImagePath = null;
 
-		$supported_image = ['gif', 'jpg', 'jpeg', 'png'];
+		$supported_image = ['gif', 'jpg', 'jpeg', 'png', 'mp4'];
 		foreach ($this->media_files ?? [] as $filePath) {
 			$ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
 
 			if (in_array($ext, $supported_image)) {
-				if (Storage::exists($filePath)) {
+				if (Storage::exists('public/' . $filePath)) {
 					$firstImagePath = $filePath;
 					break;
 				}
@@ -215,10 +215,14 @@ class Product extends Model
 	{
 		$existedMediaFiles = [];
 
-		$supported_image = ['gif', 'jpg', 'jpeg', 'png'];
+		$supported_image = ['gif', 'jpg', 'jpeg', 'png', 'mp4'];
 		foreach ($this->media_files ?? [] as $filePath) {
-			if (Storage::exists($filePath)) {
-				$existedMediaFiles[] = $filePath;
+			$ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+
+			if (in_array($ext, $supported_image)) {
+				if (Storage::exists('public/' . $filePath)) {
+					$existedMediaFiles[] = $filePath;
+				}
 			}
 		}
 
