@@ -21,9 +21,28 @@ class CartController extends Controller
 		}
 	}
 
-	public function add(Request $request)
+	/**
+	 * Get cart items
+	 *
+	 * @return array
+	 */
+	public function index(Request $request): array
 	{
-		if ($this->cartService->add(1, 1)) {
+		$cartItems = $this->cartService->getAll();
+
+		if ($request->ajax()) {
+			return [
+				'success' => true,
+				'data' => $cartItems
+			];
+		}
+
+		return [];
+	}
+
+	public function add(Request $request, Product $product)
+	{
+		if ($this->cartService->add($product->id, $request->quantity)) {
 			return response()->json([
 				'success' => true,
 				'message' => 'Product added to cart'

@@ -17,7 +17,7 @@ class CartService
 	 * @param string $cartKey
 	 * @return bool
 	 */
-	public function add(int  $productId, int $quantity = 1, string $cartKey = 'default'): bool
+	public function add(int $productId, int $quantity = 1, string $cartKey = 'default'): bool
 	{
 		if (!($quantity > 0)) {
 			return false;
@@ -53,7 +53,7 @@ class CartService
 
 				session()->put('cart.' . $cartKey, $newItems);
 			}
-			
+
 			// It logged in
 			else {
 				Cart::updateOrCreate(
@@ -70,6 +70,17 @@ class CartService
 		}
 
 		return true;
+	}
+
+	/**
+	 * Get all cart items
+	 *
+	 * @param string $cartKey
+	 * @return Collection
+	 */
+	public function getAll(string $cartKey = 'default'): Collection
+	{
+		return collect(session('cart.' . $cartKey));
 	}
 
 	/**
