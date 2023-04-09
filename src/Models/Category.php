@@ -12,50 +12,50 @@ use Illuminate\Support\Facades\Storage;
 
 class Category extends Model
 {
-    use HasFactory, HasShowIn, SoftDeletes;
+	use HasFactory, HasShowIn, SoftDeletes;
 
-    protected $table = 'shop_categories';
+	protected $table = 'shop_categories';
 
-    protected $casts = [
-        'show_in' => 'array',
-    ];
+	protected $casts = [
+		'show_in' => 'array',
+	];
 
-    protected $guarded = [];
+	protected $guarded = [];
 
 
-    /**
-     * Scope parent categories
-     *
-     * @param Illuminate\Database\Eloquent\Builder $query
-     * @return void
-     */
-    public function scopeWhereIsParent($query)
-    {
-        $query->where(function ($query) {
-            $query->where('parent_category_id', 0)
-                ->orWhere('parent_category_id', null);
-        });
-    }
+	/**
+	 * Scope parent categories
+	 *
+	 * @param Illuminate\Database\Eloquent\Builder $query
+	 * @return void
+	 */
+	public function scopeWhereIsParent($query)
+	{
+		$query->where(function ($query) {
+			$query->where('parent_category_id', 0)
+				->orWhere('parent_category_id', null);
+		});
+	}
 
-    /**
-     * Children categories relation
-     *
-     * @return HasMany
-     */
-    public function children(): HasMany
-    {
-        return $this->hasMany(Category::class, 'parent_category_id');
-    }
+	/**
+	 * Children categories relation
+	 *
+	 * @return HasMany
+	 */
+	public function children(): HasMany
+	{
+		return $this->hasMany(Category::class, 'parent_category_id');
+	}
 
-    /**
-     * Parent category relation
-     *
-     * @return BelongsTo
-     */
-    public function parent(): BelongsTo
-    {
-        return $this->belongsTo(Category::class, 'parent_category_id');
-    }
+	/**
+	 * Parent category relation
+	 *
+	 * @return BelongsTo
+	 */
+	public function parent(): BelongsTo
+	{
+		return $this->belongsTo(Category::class, 'parent_category_id');
+	}
 
 	/**
 	 * Get "thumbnail image" attribute
@@ -71,7 +71,7 @@ class Category extends Model
 			$ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
 
 			if (in_array($ext, $supported_image)) {
-				if (Storage::exists($filePath)) {
+				if (Storage::exists('public/' + $filePath)) {
 					$firstImagePath = $filePath;
 					break;
 				}
