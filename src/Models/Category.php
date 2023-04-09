@@ -67,15 +67,11 @@ class Category extends Model
 		$firstImagePath = null;
 
 		$supported_image = ['gif', 'jpg', 'jpeg', 'png'];
-		foreach ($this->media_files ?? [] as $filePath) {
-			$ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+		$filePath = $this->image ?? '';
+		$ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
 
-			if (in_array($ext, $supported_image)) {
-				if (Storage::exists('public/' + $filePath)) {
-					$firstImagePath = $filePath;
-					break;
-				}
-			}
+		if (in_array($ext, $supported_image) && Storage::exists('public/' . $filePath)) {
+			$firstImagePath = $filePath;
 		}
 
 		$thumbnailImagePath = $firstImagePath ? Storage::url($firstImagePath) : asset('assets\packages\vendor\filament-ecommerce\images\categories\category-default-thumbnail-500x500.png');
