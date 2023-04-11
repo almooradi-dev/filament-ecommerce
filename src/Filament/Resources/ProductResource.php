@@ -25,6 +25,7 @@ use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -178,6 +179,7 @@ class ProductResource extends Resource
                 TextColumn::make('title')->words(7)->tooltip(fn (TextColumn $column): ?string => $column->getState())->searchable(),
                 TextColumn::make('categories')->formatStateUsing(fn (Collection | null $state): string => $state ? implode(', ', $state->pluck('title')->toArray()) : '')->searchable(),
                 TextColumn::make('gender')->formatStateUsing(fn (string | null $state): string => Gender::ITEM_OPTIONS[$state] ?? ''),
+                BadgeColumn::make('status')->enum(ProductStatus::ALL)->colors(ProductStatus::FILAMENT_BADGE_COLORS),
                 TextColumn::make('show_in')->formatStateUsing(fn (string | null $state): string => ucfirst($state)),
             ])
             ->filters([

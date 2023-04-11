@@ -15,4 +15,11 @@ class ProductStatus
         self::PUBLISHED => 'Published',
         self::REJECTED => 'Rejected',
     ];
+
+    const FILAMENT_BADGE_COLORS = [
+        'secondary' => self::DRAFT,
+        'warning' => self::PENDING,
+        'success' => self::PUBLISHED,
+        'danger' => self::REJECTED,
+    ];
 }
