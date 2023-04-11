@@ -7,6 +7,7 @@ use Almooradi\FilamentEcommerce\Services\CartService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class CartController extends Controller
 {
@@ -40,7 +41,12 @@ class CartController extends Controller
 		return [];
 	}
 
-	public function add(Request $request, Product $product)
+	/**
+	 * Add/Update cart item
+	 *
+	 * @return JsonResponse
+	 */
+	public function add(Request $request, Product $product): JsonResponse
 	{
 		if ($this->cartService->add($product->id, $request->quantity)) {
 			return response()->json([
@@ -55,6 +61,32 @@ class CartController extends Controller
 		], 400);
 	}
 
+	/**
+	 * Remove cart item
+	 *
+	 * @return JsonResponse
+	 */
+	public function remove(Product $product): JsonResponse
+	{
+		if ($this->cartService->remove($product->id)) {
+			return response()->json([
+				'success' => true,
+				'message' => 'Product removed from the cart'
+			]);
+		}
+
+		return response()->json([
+			'error' => true,
+			'message' => 'Something wrong happened'
+		], 400);
+	}
+
+
+	/**
+	 * Empty cart
+	 *
+	 * @return JsonResponse
+	 */
 	public function empty(Request $request): JsonResponse
 	{
 		if ($this->cartService->empty()) {

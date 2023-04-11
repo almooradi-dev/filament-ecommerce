@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+	// TODO: make a dynamic tables prefix "shop_" that can be edited from a config file
     /**
      * Run the migrations.
      *

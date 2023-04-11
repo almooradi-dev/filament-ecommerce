@@ -7,6 +7,7 @@ use Almooradi\FilamentEcommerce\Constants\ProductStatus;
 use Almooradi\FilamentEcommerce\Constants\SortingOption;
 use Almooradi\FilamentEcommerce\Models\Category;
 use Almooradi\FilamentEcommerce\Models\Variation\Variation;
+use Almooradi\FilamentEcommerce\Services\CartService;
 use Almooradi\FilamentEcommerce\Traits\HasShowIn;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -227,6 +228,15 @@ class Product extends Model
 		}
 
 		return $existedMediaFiles;
+	}
+
+
+	public function getCartQuantityAttribute():int {
+		$cartItems = cache()->remember('cart-items-'.session()->getId(), 2, fn () => (new CartService())->getAll());
+
+		$productItem = $cartItems->where('product_id', $this->id)->first();
+
+		return $productItem ? $productItem['quantity'] : 0;
 	}
 
 	/**
