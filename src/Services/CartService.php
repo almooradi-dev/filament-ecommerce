@@ -3,6 +3,7 @@
 namespace Almooradi\FilamentEcommerce\Services;
 
 use Almooradi\FilamentEcommerce\Models\Cart;
+use Almooradi\FilamentEcommerce\Models\Product\Product;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -138,7 +139,18 @@ class CartService
 	{
 		if (auth()->guest() || $forceSession) {
 			if ($cartKey) {
-				return collect(session('cart.' . $cartKey));
+				$cartItems = collect(session('cart.' . $cartKey));
+
+				$products = Product::find($cartItems->pluck('product_id')->toArray())->keyBy('id');
+				$cartItems = $cartItems->map(function ($item) use ($products) {
+					$item['product'] = $products[$item['product_id']] ?? null;
+					
+					return $item;
+				});
+
+				return $cartItems;
+
+				// TODO: Add "groupBy('key')" like the one for logged in users
 			}
 
 			return collect(session('cart'));
@@ -146,6 +158,8 @@ class CartService
 			$cartItems = Cart::query() // TODO: use model relation trait
 				->where('user_id', auth()->id())
 				->when($cartKey, fn ($query) => $query->where('key', $cartKey))
+				->whereHas('product')
+				->with('product')
 				->get();
 
 			if (!$cartKey) {
@@ -165,6 +179,7 @@ class CartService
 	 */
 	private function getItem(int $productId, string $cartKey = 'default'): Collection|null
 	{
+		// TODO: for logged in users
 		$items = collect(session('cart.' . $cartKey));
 		// dd(session()->all());
 

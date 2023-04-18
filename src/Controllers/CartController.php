@@ -25,9 +25,9 @@ class CartController extends Controller
 	/**
 	 * Get cart items
 	 *
-	 * @return array
+	 * @return array|\Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory
 	 */
-	public function index(Request $request): array
+	public function index(Request $request): array|\Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory
 	{
 		$cartItems = $this->cartService->getAll();
 
@@ -38,7 +38,9 @@ class CartController extends Controller
 			];
 		}
 
-		return [];
+		$data['items'] = $cartItems;
+
+		return view('web.frontend.sections.cart.index', $data); // TODO: Put the view path in the config file
 	}
 
 	/**
