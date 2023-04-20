@@ -7,6 +7,7 @@ use Almooradi\FilamentEcommerce\Models\Product\Product;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class CartService
@@ -21,7 +22,7 @@ class CartService
 	 */
 	public function add(int $productId, int $quantity = 1, string $cartKey = 'default'): bool
 	{
-		if (!($quantity > 0)) {
+		if (!($productId > 0) || !($quantity > 0)) {
 			return false;
 		}
 
@@ -72,7 +73,64 @@ class CartService
 				$dbItem->increment('quantity', $quantity);
 			}
 		} catch (Throwable $th) {
-			// TODO: Log error
+			Log::error($th);
+
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Update cart item
+	 *
+	 * @param int $productId
+	 * @param int $quantity
+	 * @param string $cartKey
+	 * @return bool
+	 */
+	public function update(int $productId, int $quantity, string $cartKey = 'default'): bool
+	{
+		if (!($productId > 0) || !($quantity > 0)) {
+			return false;
+		}
+
+		try {
+			$currentProductItem = $this->getItem($productId, $cartKey);
+			if (!$currentProductItem) {
+				return false;
+			}
+
+			// If guest => save in the session
+			if (auth()->guest()) {
+				$items = collect(session('cart.' . $cartKey));
+				$newItems = [];
+
+				if (!$items) {
+					return false;
+				}
+
+				$newItems = $items->map(function ($item) use ($productId, $quantity) {
+					if ($item['product_id'] == $productId) {
+						$item['quantity'] += $quantity;
+					}
+
+					return $item;
+				})->toArray();
+
+				// Remove null items
+				$newItems = array_filter($newItems);
+
+				session()->put('cart.' . $cartKey, $newItems);
+			}
+
+			// It logged in
+			else {
+				$currentProductItem->update(['quantity' => $quantity]);
+			}
+		} catch (Throwable $th) {
+			Log::error($th);
+
 			return false;
 		}
 
@@ -121,7 +179,8 @@ class CartService
 				])->delete();
 			}
 		} catch (Throwable $th) {
-			// TODO: Log error
+			Log::error($th);
+
 			return false;
 		}
 
@@ -144,7 +203,7 @@ class CartService
 				$products = Product::find($cartItems->pluck('product_id')->toArray())->keyBy('id');
 				$cartItems = $cartItems->map(function ($item) use ($products) {
 					$item['product'] = $products[$item['product_id']] ?? null;
-					
+
 					return $item;
 				});
 
@@ -175,17 +234,25 @@ class CartService
 	 *
 	 * @param int $productId
 	 * @param string $cartKey
-	 * @return Collection|null
+	 * @return Collection|Cart|null
 	 */
-	private function getItem(int $productId, string $cartKey = 'default'): Collection|null
+	private function getItem(int $productId, string $cartKey = 'default'): Collection|Cart|null
 	{
-		// TODO: for logged in users
-		$items = collect(session('cart.' . $cartKey));
-		// dd(session()->all());
+		$item = null;
 
-		$item = $items->where('product_id', $productId)->first();
+		if (auth()->guest()) {
+			$items = collect(session('cart.' . $cartKey));
+			$item = $items->where('product_id', $productId)->first();
+			$item = $item ? collect($item) : null;
+		} else {
+			$item = Cart::where([
+				'user_id' => auth()->id(),
+				'product_id' => $productId,
+				'key' => $cartKey
+			])->first();
+		}
 
-		return $item ? collect($item) : null;
+		return $item;
 	}
 
 	/**
@@ -203,6 +270,8 @@ class CartService
 				Cart::where('user_id', auth()->id())->where('key', $cartKey)->delete();
 			}
 		} catch (Throwable $th) {
+			Log::error($th);
+
 			return false;
 		}
 

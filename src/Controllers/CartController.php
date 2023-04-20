@@ -44,7 +44,7 @@ class CartController extends Controller
 	}
 
 	/**
-	 * Add/Update cart item
+	 * Add to cart item
 	 *
 	 * @return JsonResponse
 	 */
@@ -54,6 +54,26 @@ class CartController extends Controller
 			return response()->json([
 				'success' => true,
 				'message' => 'Product added to cart'
+			]);
+		}
+
+		return response()->json([
+			'error' => true,
+			'message' => 'Something wrong happened'
+		], 400);
+	}
+
+	/**
+	 * Update cart item
+	 *
+	 * @return JsonResponse
+	 */
+	public function update(Request $request, Product $product): JsonResponse
+	{
+		if ($this->cartService->update($product->id, $request->quantity)) {
+			return response()->json([
+				'success' => true,
+				'message' => 'Cart updated'
 			]);
 		}
 
