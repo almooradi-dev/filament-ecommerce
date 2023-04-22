@@ -5,6 +5,8 @@ namespace Almooradi\FilamentEcommerce\Controllers;
 use Almooradi\FilamentEcommerce\Models\Product\Product;
 use Almooradi\FilamentEcommerce\Services\CartService;
 use App\Http\Controllers\Controller;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -16,10 +18,6 @@ class CartController extends Controller
 	function __construct(CartService $cartService)
 	{
 		$this->cartService = $cartService;
-
-		if (!session()->has('cart')) {
-			session()->put('cart', ['default' => []]);
-		}
 	}
 
 	/**
@@ -27,7 +25,7 @@ class CartController extends Controller
 	 *
 	 * @return array|\Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory
 	 */
-	public function index(Request $request): array|\Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory
+	public function index(Request $request): array|View|Factory
 	{
 		$cartItems = $this->cartService->getAll();
 
@@ -102,7 +100,6 @@ class CartController extends Controller
 			'message' => 'Something wrong happened'
 		], 400);
 	}
-
 
 	/**
 	 * Empty cart

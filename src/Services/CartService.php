@@ -12,6 +12,13 @@ use Throwable;
 
 class CartService
 {
+	function __construct()
+	{
+		if (!session()->has('cart')) {
+			session()->put('cart', ['default' => []]);
+		}
+	}
+
 	/**
 	 * Add to cart
 	 *
@@ -329,5 +336,34 @@ class CartService
 		}
 
 		return false;
+	}
+
+	/**
+	 * Get cart item costs (shipping, subtotal, total)
+	 *
+	 * @param string $cartKey
+	 * @return array
+	 */
+	public function getCosts(string $cartKey = 'default', $items = null): array
+	{
+		$items = $items ?? $this->getAll($cartKey);
+
+		$shippingCost = 0;
+		$subtotal = 0;
+		foreach ($items as $item) {
+			$product = $item->product ?? Product::find($item->product_id);
+
+			if (!$product) {
+				continue;
+			}
+
+			$subtotal += $item->quantity * $product->final_unit_price;
+		}
+
+		return [
+			'shipping' => $shippingCost,
+			'subtotal' => $subtotal,
+			'total' => $shippingCost + $subtotal
+		];
 	}
 }

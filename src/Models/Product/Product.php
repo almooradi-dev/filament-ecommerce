@@ -230,13 +230,30 @@ class Product extends Model
 		return $existedMediaFiles;
 	}
 
-
-	public function getCartQuantityAttribute():int {
-		$cartItems = cache()->remember('cart-items-'.session()->getId(), 2, fn () => (new CartService())->getAll());
+	/**
+	 * Get cart quantity
+	 *
+	 * @return integer
+	 */
+	public function getCartQuantityAttribute(): int
+	{
+		$cartItems = cache()->remember('cart-items-' . session()->getId(), 2, fn () => (new CartService())->getAll());
 
 		$productItem = $cartItems->where('product_id', $this->id)->first();
 
 		return $productItem ? $productItem['quantity'] : 0;
+	}
+
+	/**
+	 * Get product final unit price after discount
+	 *
+	 * @return integer|float
+	 */
+	public function getFinalUnitPriceAttribute(): int|float
+	{
+		$finalUnitPrice = $this->discount_price === null ? $this->price : ($this->discount_price ?? 0);
+
+		return $finalUnitPrice;
 	}
 
 	/**
