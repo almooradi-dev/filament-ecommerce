@@ -4,10 +4,10 @@ namespace Almooradi\FilamentEcommerce;
 
 use Almooradi\FilamentEcommerce\Filament\Resources\ProductResource;
 use Almooradi\FilamentEcommerce\Filament\Resources\CategoryResource;
+use Almooradi\FilamentEcommerce\Filament\Resources\Order\OrderResource;
 use Almooradi\FilamentEcommerce\Filament\Resources\ProductVariationResource;
 use Almooradi\FilamentEcommerce\Filament\Resources\VariationResource;
 use Filament\PluginServiceProvider;
-use Illuminate\Support\ServiceProvider;
 use Spatie\LaravelPackageTools\Package;
 
 class FilamentEcommerceServiceProvider extends PluginServiceProvider
@@ -17,6 +17,7 @@ class FilamentEcommerceServiceProvider extends PluginServiceProvider
 		CategoryResource::class,
 		VariationResource::class,
 		ProductVariationResource::class,
+		OrderResource::class,
 	];
 
 	public function configurePackage(Package $package): void

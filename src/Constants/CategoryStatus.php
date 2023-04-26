@@ -14,3 +14,6 @@ class CategoryStatus
         self::PENDING => 'Pending',
     ];
 }
+
+
+// TODO: Add all statuses to database, so we can use translation and the developers can add what ever they need easily

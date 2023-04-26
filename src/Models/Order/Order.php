@@ -6,7 +6,9 @@ use Almooradi\FilamentEcommerce\Constants\Order\OrderShippingStatus;
 use Almooradi\FilamentEcommerce\Constants\Order\OrderStatus;
 use Almooradi\FilamentEcommerce\Constants\Order\PaymentMethod;
 use Almooradi\FilamentEcommerce\Models\Product\Product;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -36,6 +38,16 @@ class Order extends Model
 		$orderNumber = str_pad($ordersCount + 1, 8, '0', STR_PAD_LEFT);
 
 		return $prefix . '-' . $year . $month . '-' . $orderNumber;
+	}
+
+	/**
+	 * Get related user
+	 *
+	 * @return BelongsTo
+	 */
+	public function user(): BelongsTo
+	{
+		return $this->belongsTo(User::class);
 	}
 
 	/**
