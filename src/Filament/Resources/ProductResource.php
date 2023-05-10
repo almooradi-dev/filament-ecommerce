@@ -30,6 +30,7 @@ use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use SevendaysDigital\FilamentNestedResources\Columns\ChildResourceLink;
 
 class ProductResource extends Resource
 {
@@ -39,7 +40,8 @@ class ProductResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
 
-    protected static ?string $slug = 'shop/products';
+    // protected static ?string $slug = 'shop/products';
+    protected static ?string $slug = 'products';
 
     public static function form(Form $form): Form
     {
@@ -173,7 +175,6 @@ class ProductResource extends Resource
 
     public static function table(Table $table): Table
     {
-        // dd(Product::first()->variations());
         return $table
             ->columns([
                 TextColumn::make('title')->words(7)->tooltip(fn (TextColumn $column): ?string => $column->getState())->searchable(),
@@ -181,29 +182,19 @@ class ProductResource extends Resource
                 TextColumn::make('gender')->formatStateUsing(fn (string | null $state): string => Gender::ITEM_OPTIONS[$state] ?? ''),
                 BadgeColumn::make('status')->enum(ProductStatus::ALL)->colors(ProductStatus::FILAMENT_BADGE_COLORS),
                 TextColumn::make('show_in')->formatStateUsing(fn (string | null $state): string => ucfirst($state)),
+                ChildResourceLink::make(ProductVariationResource::class)
+                    ->formatStateUsing(fn (Product $record, string | null $state): string => count($record->variations) > 0 ? $state : ''),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Action::make('variations')
-                    ->visible(fn (Product $record): bool => count($record->variations) > 0)
-                    ->url(fn (Product $record): string => route('filament.resources.' . ProductVariationResource::getSlug() . '.index', $record))
-                    ->icon('heroicon-o-color-swatch')
-                    ->color('success'),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
     }
 
     public static function getPages(): array
@@ -215,7 +206,7 @@ class ProductResource extends Resource
         ];
     }
 
-    private static function updateDiscountPrice(Closure $set, Closure $get)
+    public static function updateDiscountPrice(Closure $set, Closure $get)
     {
         $price = $get('price');
         $discount_price = $get('price');

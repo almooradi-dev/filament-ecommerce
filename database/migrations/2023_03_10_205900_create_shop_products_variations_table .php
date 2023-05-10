@@ -17,9 +17,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('product_id')->constrained('shop_products')->cascadeOnDelete();
             $table->foreignId('variation_id')->constrained('shop_variations')->cascadeOnDelete();
+            $table->foreignId('variation_value_id')->nullable()->constrained('shop_variations_values')->cascadeOnDelete();
             $table->timestamps();
 
-            $table->unique(['product_id', 'variation_id']);
+            $table->unique(['product_id', 'variation_id', 'variation_value_id']);
         });
     }
 

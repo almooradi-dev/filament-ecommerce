@@ -21,14 +21,44 @@ use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Database\Eloquent\Builder;
+use SevendaysDigital\FilamentNestedResources\NestedResource;
 
-class ProductVariationResource extends Resource
+class ProductVariationResource extends NestedResource
 {
     protected static ?string $model = Product::class;
 
     protected static bool $shouldRegisterNavigation = false;
 
-    protected static ?string $slug = 'shop/products/variations';
+    protected static ?string $slug = 'variations';
+
+    public static function getParent(): string
+    {
+        return ProductResource::class;
+    }
+
+    public static function getParentAccessor(): string
+    {
+        return 'parentProduct';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'variations';
+    }
+
+    public static function getEloquentQuery(string|int|null $parent = null): Builder
+    {
+        $query = static::getModel()::query();
+        $parentModel = static::getParent()::getModel();
+        $key = (new $parentModel)->getKeyName();
+        $query->whereHas(
+            static::getParentAccessor(),
+            fn (Builder $builder) => $builder->where($key, '=', $parent ?? static::getParentId())
+        );
+
+        return $query;
+    }
 
     public static function form(Form $form): Form
     {
@@ -93,7 +123,7 @@ class ProductVariationResource extends Resource
                                     )
                                     ->reactive()
                                     ->afterStateUpdated(function (Closure $set, Closure $get) {
-                                        return self::updateDiscountPrice($set, $get);
+                                        return ProductResource::updateDiscountPrice($set, $get);
                                     })
                                     ->suffix('$')
                                     ->maxLength(191),
@@ -103,7 +133,7 @@ class ProductVariationResource extends Resource
                                     ->disablePlaceholderSelection()
                                     ->reactive()
                                     ->afterStateUpdated(function (Closure $set, Closure $get) {
-                                        return self::updateDiscountPrice($set, $get);
+                                        return ProductResource::updateDiscountPrice($set, $get);
                                     })
                                     ->suffix(fn ($get) => $get('discount_type') == 'fixed' ? '$' : ($get('discount_type') == 'percentage' ? '%' : null))
                                     ->options([
@@ -119,7 +149,7 @@ class ProductVariationResource extends Resource
                                     ->required(fn ($get) => in_array($get('discount_type'), ['fixed', 'percentage']))
                                     ->reactive()
                                     ->afterStateUpdated(function (Closure $set, Closure $get) {
-                                        return self::updateDiscountPrice($set, $get);
+                                        return ProductResource::updateDiscountPrice($set, $get);
                                     })
                                     ->suffix(fn ($get) => $get('discount_type') == 'fixed' ? '$' : ($get('discount_type') == 'percentage' ? '%' : null))
                                     ->maxLength(191),
@@ -151,31 +181,24 @@ class ProductVariationResource extends Resource
             ]);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
-
     public static function getPages(): array
     {
         return [
-            'index' => ListProductVariations::route('/{product}'),
-            'create' => CreateProductVariation::route('/{product}/create'),
-            'edit' => EditProductVariation::route('/{product}/{record}/edit'),
+            'index' => ListProductVariations::route('/'),
+            'create' => CreateProductVariation::route('/create'),
+            'edit' => EditProductVariation::route('/{record}/edit'),
         ];
     }
 
-    public static function getUrl($name = 'index', $params = [], $isAbsolute = true): string
-    {
-        // Add "product" parameter
-        if (!isset($params['product'])) {
-            $params['product'] = request()->product;
-        }
+    // public static function getUrl($name = 'index', $params = [], $isAbsolute = true): string
+    // {
+    //     // Add "product" parameter
+    //     if (!isset($params['product'])) {
+    //         $params['product'] = request()->product;
+    //     }
 
-        $routeBaseName = static::getRouteBaseName();
+    //     $routeBaseName = static::getRouteBaseName();
 
-        return route("{$routeBaseName}.{$name}", $params, $isAbsolute);
-    }
+    //     return route("{$routeBaseName}.{$name}", $params, $isAbsolute);
+    // }
 }
