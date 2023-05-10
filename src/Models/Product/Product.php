@@ -7,6 +7,7 @@ use Almooradi\FilamentEcommerce\Constants\ProductStatus;
 use Almooradi\FilamentEcommerce\Constants\SortingOption;
 use Almooradi\FilamentEcommerce\Models\Category;
 use Almooradi\FilamentEcommerce\Models\Variation\Variation;
+use Almooradi\FilamentEcommerce\Models\Variation\VariationValue;
 use Almooradi\FilamentEcommerce\Services\CartService;
 use Almooradi\FilamentEcommerce\Traits\HasShowIn;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -95,6 +96,16 @@ class Product extends Model
 	public function variations(): BelongsToMany
 	{
 		return $this->belongsToMany(Variation::class, 'shop_products_variations', 'product_id', 'variation_id');
+	}
+
+	/**
+	 * Variations values relation
+	 *
+	 * @return BelongsToMany
+	 */
+	public function variationsValues(): BelongsToMany
+	{
+		return $this->belongsToMany(VariationValue::class, 'shop_products_variations', 'product_id', 'variation_value_id');
 	}
 
 	/**

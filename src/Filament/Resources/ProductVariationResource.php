@@ -10,6 +10,7 @@ use Almooradi\FilamentEcommerce\Models\Product\Product;
 use Almooradi\FilamentEcommerce\Models\Variation\Variation;
 use Closure;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
@@ -22,6 +23,9 @@ use Filament\Resources\Table;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Route;
 use SevendaysDigital\FilamentNestedResources\NestedResource;
 
 class ProductVariationResource extends NestedResource
@@ -47,22 +51,17 @@ class ProductVariationResource extends NestedResource
         return 'variations';
     }
 
-    public static function getEloquentQuery(string|int|null $parent = null): Builder
+    public static function getParentId(): int|string|null
     {
-        $query = static::getModel()::query();
-        $parentModel = static::getParent()::getModel();
-        $key = (new $parentModel)->getKeyName();
-        $query->whereHas(
-            static::getParentAccessor(),
-            fn (Builder $builder) => $builder->where($key, '=', $parent ?? static::getParentId())
-        );
+        $parentId = Route::current()->parameter('product', Route::current()->parameter('record'));
 
-        return $query;
+        return $parentId instanceof Model ? $parentId->getKey() : $parentId;
     }
 
     public static function form(Form $form): Form
     {
         $product = Product::find(request()->product);
+        // dd($product->parentProduct);
 
         $variationsSelects = [];
         if ($product) {
@@ -84,10 +83,7 @@ class ProductVariationResource extends NestedResource
                             ->schema($variationsSelects),
                         Tab::make('General')
                             ->schema([
-                                Select::make('parent_product_id')
-                                    ->relationship('parentProduct', 'title')
-                                    ->default($product?->id)
-                                    ->disabled(true),
+                                Hidden::make('parent_product_id')->default(static::getParentId()),
                                 TextInput::make('sku')->maxLength(191),
                                 Select::make('status')
                                     ->disablePlaceholderSelection()
@@ -168,7 +164,10 @@ class ProductVariationResource extends NestedResource
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([])
+            ->columns([
+                TextColumn::make('price'),
+                TextColumn::make('variationsValues')->formatStateUsing(fn (Collection $variationsValues) :string => implode(', ', $variationsValues->pluck('id')->toArray())),
+            ])
             ->filters([
                 //
             ])

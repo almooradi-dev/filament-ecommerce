@@ -20,7 +20,7 @@ return new class extends Migration
             $table->foreignId('variation_value_id')->nullable()->constrained('shop_variations_values')->cascadeOnDelete();
             $table->timestamps();
 
-            $table->unique(['product_id', 'variation_id', 'variation_value_id']);
+            $table->unique(['product_id', 'variation_id', 'variation_value_id'], 'shop_products_variations_unique');
         });
     }
 
