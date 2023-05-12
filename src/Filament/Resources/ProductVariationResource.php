@@ -36,6 +36,21 @@ class ProductVariationResource extends NestedResource
 
     protected static ?string $slug = 'variations';
 
+    protected static bool $canCreateAnother = false;
+
+    public static function getUrlParametersForState(): array
+    {
+        $parameters = Route::current()->parameters;
+
+        foreach ($parameters as $key => $value) {
+            if ($value instanceof Model) {
+                $parameters[$key] = $value->getKey();
+            }
+        }
+
+        return $parameters;
+    }
+
     public static function getParent(): string
     {
         return ProductResource::class;
@@ -60,17 +75,22 @@ class ProductVariationResource extends NestedResource
 
     public static function form(Form $form): Form
     {
-        $product = Product::find(request()->product);
-        // dd($product->parentProduct);
+        $parentProduct = Product::find(static::getParentId());
 
         $variationsSelects = [];
-        if ($product) {
-            $product->loadMissing('variations.values');
-            foreach ($product->variations as $variation) {
-                $variationsSelects[] = Select::make('variations.' . $variation->id)
-                    ->label($variation->name)
-                    ->required()
-                    ->options($variation->values->pluck('value', 'id'));
+        if ($parentProduct) {
+            $parentProduct->loadMissing(['productVariations', 'variations.values']);
+            $parentProductVariations = $parentProduct->productVariations->keyBy('variation_id');
+
+            // static::$record->loadMissing(['productVariationsValues']);
+
+            foreach ($parentProduct->variations as $variation) {
+                if (isset($parentProductVariations[$variation->id])) {
+                    $variationsSelects[] = Select::make('variations.' . $parentProductVariations[$variation->id]->id)
+                        ->label($variation->name)
+                        ->required()
+                        ->options($variation->values->pluck('value', 'id'));
+                }
             }
         }
 
@@ -83,7 +103,6 @@ class ProductVariationResource extends NestedResource
                             ->schema($variationsSelects),
                         Tab::make('General')
                             ->schema([
-                                Hidden::make('parent_product_id')->default(static::getParentId()),
                                 TextInput::make('sku')->maxLength(191),
                                 Select::make('status')
                                     ->disablePlaceholderSelection()
@@ -165,8 +184,12 @@ class ProductVariationResource extends NestedResource
     {
         return $table
             ->columns([
-                TextColumn::make('price'),
-                TextColumn::make('variationsValues')->formatStateUsing(fn (Collection $variationsValues) :string => implode(', ', $variationsValues->pluck('id')->toArray())),
+                TextColumn::make('productVariationsValues')->formatStateUsing(function (Product $record): string {
+                    $record->loadMissing(['productVariationsValues.variationValue']);
+
+                    return implode(', ', $record->productVariationsValues?->pluck('variationValue.value')?->toArray() ?? []);
+                }),
+                TextColumn::make('price'), // TODO: currency and discount, also for parent product
             ])
             ->filters([
                 //
@@ -188,16 +211,4 @@ class ProductVariationResource extends NestedResource
             'edit' => EditProductVariation::route('/{record}/edit'),
         ];
     }
-
-    // public static function getUrl($name = 'index', $params = [], $isAbsolute = true): string
-    // {
-    //     // Add "product" parameter
-    //     if (!isset($params['product'])) {
-    //         $params['product'] = request()->product;
-    //     }
-
-    //     $routeBaseName = static::getRouteBaseName();
-
-    //     return route("{$routeBaseName}.{$name}", $params, $isAbsolute);
-    // }
 }

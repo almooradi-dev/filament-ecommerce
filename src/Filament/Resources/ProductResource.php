@@ -168,6 +168,8 @@ class ProductResource extends Resource
                                     ->searchable()
                                     ->preload()
                                     ->relationship('variations', 'name')
+                                    ->disabled(fn (Product | null $record): bool => count($record?->variations ?? []) > 0)
+                                    ->helperText(fn (Product | null $record): string => count($record?->variations ?? []) ? 'Delete current ' . count($record?->variations ?? []) . ' variations to allow edit' : '')
                             ]),
                     ])
             ]);

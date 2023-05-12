@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -99,16 +100,6 @@ class Product extends Model
 	}
 
 	/**
-	 * Variations values relation
-	 *
-	 * @return BelongsToMany
-	 */
-	public function variationsValues(): BelongsToMany
-	{
-		return $this->belongsToMany(VariationValue::class, 'shop_products_variations', 'product_id', 'variation_value_id');
-	}
-
-	/**
 	 * Parent product relation
 	 *
 	 * @return BelongsTo
@@ -116,6 +107,26 @@ class Product extends Model
 	public function parentProduct(): BelongsTo
 	{
 		return $this->belongsTo(Product::class, 'parent_product_id')->where('parent_product_id', null);
+	}
+
+	/**
+	 * Product variations relation
+	 *
+	 * @return HasMany
+	 */
+	public function productVariations(): HasMany
+	{
+		return $this->hasMany(ProductVariation::class, 'product_id');
+	}
+
+	/**
+	 * Product variations values relation
+	 *
+	 * @return HasMany
+	 */
+	public function productVariationsValues(): HasMany
+	{
+		return $this->hasMany(ProductVariationValue::class, 'product_id');
 	}
 
 	/**

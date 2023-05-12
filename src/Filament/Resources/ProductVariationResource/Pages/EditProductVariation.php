@@ -4,27 +4,42 @@ namespace Almooradi\FilamentEcommerce\Filament\Resources\ProductVariationResourc
 
 use Almooradi\FilamentEcommerce\Filament\Resources\ProductVariationResource;
 use Almooradi\FilamentEcommerce\Models\Product\Product;
+use Almooradi\FilamentEcommerce\Models\Product\ProductVariationValue;
 use Filament\Pages\Actions;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Contracts\Support\Htmlable;
+use SevendaysDigital\FilamentNestedResources\ResourcePages\NestedPage;
 
 class EditProductVariation extends EditRecord
 {
+    use NestedPage;
+
     protected static string $resource = ProductVariationResource::class;
 
     protected function getSubheading(): string | Htmlable | null
     {
-        dd($this->record);
-        
-        $parentProduct = Product::findOrFail(static::$resource::getParentId());
+        $parentProduct = Product::findOrFail($this->record->parent_product_id);
 
         return 'Parent Product: ' . $parentProduct->title;
     }
-    
-    protected function getActions(): array
+
+    // protected function getActions(): array
+    // {
+    //     return [
+    //         Actions\DeleteAction::make(),
+    //     ];
+    // }
+
+    protected function afterSave(): void
     {
-        return [
-            Actions\DeleteAction::make(),
-        ];
+        $selectedVariations = $this->data['variations'];
+        $productVariationsData = [];
+        foreach ($selectedVariations as $variationId => $valueId) {
+            $productVariationsData[] = [
+                'product_variation_id' => $variationId,
+                'variation_value_id' => $valueId,
+            ];
+        }
+        ProductVariationValue::insert($productVariationsData);
     }
 }
