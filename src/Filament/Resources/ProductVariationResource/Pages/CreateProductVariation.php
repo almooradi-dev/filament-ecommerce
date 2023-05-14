@@ -33,15 +33,11 @@ class CreateProductVariation extends CreateRecord
             foreach ($selectedVariations as $variationId => $valueId) {
                 $productVariationsData[] = [
                     'product_id' => $this->record->id,
-                    'product_variation_id' => $variationId,
+                    'variation_id' => $variationId,
                     'variation_value_id' => $valueId,
                 ];
             }
             ProductVariationValue::insert($productVariationsData);
-            // ProductVariationValue::upsert(
-            //     $productVariationsData,
-            //     ['product_id', 'product_variation_id']
-            // );
         }
     }
 }

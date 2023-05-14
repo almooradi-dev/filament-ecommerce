@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('shop_products_variations_values', function (Blueprint $table) {
             $table->foreignId('product_id')->constrained('shop_products')->cascadeOnDelete();
-            $table->foreignId('product_variation_id')->constrained('shop_products_variations')->cascadeOnDelete();
+            $table->foreignId('variation_id')->constrained('shop_variations')->cascadeOnDelete();
             $table->foreignId('variation_value_id')->constrained('shop_variations_values')->cascadeOnDelete();
             $table->timestamps();
-            $table->primary(['product_id', 'product_variation_id', 'variation_value_id'], 'pk_shop_products_variations_values');
+            $table->primary(['product_id', 'variation_id', 'variation_value_id'], 'pk_shop_products_variations_values');
         });
     }
     /**

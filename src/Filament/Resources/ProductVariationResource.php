@@ -73,20 +73,19 @@ class ProductVariationResource extends NestedResource
         return $parentId instanceof Model ? $parentId->getKey() : $parentId;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Form $form, $parentProduct = null): Form
     {
-        $parentProduct = Product::find(static::getParentId());
+        // ? Using the "NestedResource" we can get the "parentProduct" from the "form()", I don't know why yet
+        // ? Without the "NestedResource" we will get the "current record" from the "form()"
 
         $variationsSelects = [];
         if ($parentProduct) {
             $parentProduct->loadMissing(['productVariations', 'variations.values']);
             $parentProductVariations = $parentProduct->productVariations->keyBy('variation_id');
 
-            // static::$record->loadMissing(['productVariationsValues']);
-
             foreach ($parentProduct->variations as $variation) {
                 if (isset($parentProductVariations[$variation->id])) {
-                    $variationsSelects[] = Select::make('variations.' . $parentProductVariations[$variation->id]->id)
+                    $variationsSelects[] = Select::make('variations.' . $variation->id)
                         ->label($variation->name)
                         ->required()
                         ->options($variation->values->pluck('value', 'id'));

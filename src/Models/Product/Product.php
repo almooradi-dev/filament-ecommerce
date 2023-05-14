@@ -106,7 +106,17 @@ class Product extends Model
 	 */
 	public function parentProduct(): BelongsTo
 	{
-		return $this->belongsTo(Product::class, 'parent_product_id')->where('parent_product_id', null);
+		return $this->belongsTo(Product::class, 'parent_product_id');
+	}
+
+	/**
+	 * Children products relation
+	 *
+	 * @return BelongsTo
+	 */
+	public function childrenProducts(): HasMany
+	{
+		return $this->hasMany(Product::class, 'parent_product_id');
 	}
 
 	/**

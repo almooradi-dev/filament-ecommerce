@@ -2,6 +2,7 @@
 
 namespace Almooradi\FilamentEcommerce\Models\Product;
 
+use Almooradi\FilamentEcommerce\Models\Variation\Variation;
 use Almooradi\FilamentEcommerce\Models\Variation\VariationValue;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +15,16 @@ class ProductVariationValue extends Model
 	protected $table = 'shop_products_variations_values';
 
 	protected $guarded = [];
+
+	/**
+	 * Get related variation
+	 *
+	 * @return BelongsTo
+	 */
+	public function variation(): BelongsTo
+	{
+		return $this->belongsTo(Variation::class, 'variation_id');
+	}
 
 	/**
 	 * Get related variation value

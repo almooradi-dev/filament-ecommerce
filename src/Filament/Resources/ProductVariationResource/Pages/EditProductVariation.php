@@ -23,12 +23,29 @@ class EditProductVariation extends EditRecord
         return 'Parent Product: ' . $parentProduct->title;
     }
 
-    // protected function getActions(): array
-    // {
-    //     return [
-    //         Actions\DeleteAction::make(),
-    //     ];
-    // }
+    protected function getActions(): array
+    {
+        return [
+            // Actions\DeleteAction::make(), // FIXME: Throw an error when using with nested resources
+        ];
+    }
+
+    protected function mutateFormDataBeforeFill($data): array
+    {
+        $data['variations'] = [];
+        foreach ($this->record->productVariationsValues as $row) {
+            $data['variations'][$row['variation_id']] = $row['variation_value_id'];
+        }
+
+        return $data;
+    }
+
+    protected function mutateFormDataBeforeSave($data): array
+    {
+        unset($data['variations']);
+
+        return $data;
+    }
 
     protected function afterSave(): void
     {
@@ -36,10 +53,11 @@ class EditProductVariation extends EditRecord
         $productVariationsData = [];
         foreach ($selectedVariations as $variationId => $valueId) {
             $productVariationsData[] = [
-                'product_variation_id' => $variationId,
+                'product_id' => $this->record->id,
+                'variation_id' => $variationId,
                 'variation_value_id' => $valueId,
             ];
         }
-        ProductVariationValue::insert($productVariationsData);
+        ProductVariationValue::upsert($productVariationsData, ['product_id', 'product_variation_id']);
     }
 }
