@@ -87,7 +87,7 @@ class ProductVariationResource extends NestedResource
                 if (isset($parentProductVariations[$variation->id])) {
                     $variationsSelects[] = Select::make('variations.' . $variation->id)
                         ->label($variation->name)
-                        ->required()
+                        ->required() // FIXME: Not working
                         ->options($variation->values->pluck('value', 'id'));
                 }
             }

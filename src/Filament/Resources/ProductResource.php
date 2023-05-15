@@ -211,13 +211,17 @@ class ProductResource extends Resource
     public static function updateDiscountPrice(Closure $set, Closure $get)
     {
         $price = $get('price');
-        $discount_price = $get('price');
+        $discount_price = 0;
         $discount_amount = $get('discount_amount');
 
-        if ($get('discount_type') == 'fixed') {
-            $discount_price = $price - $discount_amount;
-        } else if ($get('discount_type') == 'percentage') {
-            $discount_price = $price - $price * $discount_amount / 100;
+        if ($price) {
+            if ($get('discount_type') == 'fixed') {
+                $discount_price = $price - $discount_amount;
+            } else if ($get('discount_type') == 'percentage') {
+                $discount_price = $price - $price * $discount_amount / 100;
+            } else {
+                $discount_price = $get('price');
+            }
         }
 
         $set('discount_price', $discount_price);

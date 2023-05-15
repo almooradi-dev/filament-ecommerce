@@ -25,6 +25,13 @@ class CreateProductVariation extends CreateRecord
         return 'Parent Product: ' . $parentProduct?->title;
     }
 
+    protected function mutateFormDataBeforeCreate($data): array
+    {
+        unset($data['variations']);
+
+        return $data;
+    }
+
     protected function afterCreate(): void
     {
         $selectedVariations = $this->data['variations'] ?? [];

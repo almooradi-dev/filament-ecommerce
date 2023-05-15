@@ -140,6 +140,26 @@ class Product extends Model
 	}
 
 	/**
+	 * Get "price html display" attribute
+	 *
+	 * @return string|null
+	 */
+	public function getPriceHtmlDisplayAttribute(): string|null
+	{
+		// TODO: Later: render from a view blade file and add path to package config
+
+		if ($this->price && $this->discount_price === null) {
+			return '<p class="my-3 text-4xl font-semibold text-primary">' . $this->price . '$</p>';
+		} elseif ($this->discount_price !== null) {
+			return '<p class="my-3 text-4xl font-semibold text-primary"><strike class="text-xl">' . $this->price . '$</strike>&nbsp;' . $this->discount_price . '$</p>';
+		} else if ($this->parent_product_id > 0) {
+			return $this->parentProduct?->price_html_display;
+		} else {
+			return '<p class="my-3 text-2xl font-semibold text-primary">Not in stock</p>';
+		}
+	}
+
+	/**
 	 * Get "discount_price" attribute
 	 *
 	 * @return string|null
@@ -168,11 +188,53 @@ class Product extends Model
 		// ! NOTE: This consept is used also in "scopeWherePurchasable()" method, so anything is changed here, it must also be changed in this methos "scopeWherePurchasable()"
 
 		$is_purchasable = false;
-		if ($this->price !== null && $this->price >= 0) {
+		if ($this->assigned_price !== null && $this->assigned_price >= 0) {
 			$is_purchasable = true;
 		}
 
 		return $is_purchasable;
+	}
+
+	/**
+	 * Get final assigned price
+	 *
+	 * @return float|int
+	 */
+	public function getAssignedPriceAttribute(): float|int
+	{
+		if ($this->parent_product_id > 0 && $this->price === null) {
+			return $this->parentProduct?->price;
+		}
+
+		return $this->price;
+	}
+
+	/**
+	 * Get final assigned discount price
+	 *
+	 * @return float|int
+	 */
+	public function getAssignedDiscountPriceAttribute(): float|int
+	{
+		if ($this->parent_product_id > 0 && $this->price === null) {
+			return $this->parentProduct?->discount_price;
+		}
+
+		return $this->discount_price;
+	}
+
+	/**
+	 * Get final assigned discount type
+	 *
+	 * @return string
+	 */
+	public function getAssignedDiscountTypeAttribute(): string
+	{
+		if ($this->parent_product_id > 0 && $this->type === null) {
+			return $this->parentProduct?->discount_type;
+		}
+
+		return $this->discount_type;
 	}
 
 	/**

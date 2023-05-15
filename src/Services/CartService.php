@@ -207,7 +207,7 @@ class CartService
 			if ($cartKey) {
 				$cartItems = collect(session('cart.' . $cartKey));
 
-				$products = Product::find($cartItems->pluck('product_id')->toArray())->keyBy('id');
+				$products = Product::with(['parentProduct', 'productVariationsValues.variationValue'])->find($cartItems->pluck('product_id')->toArray())->keyBy('id');
 				$cartItems = $cartItems->map(function ($item) use ($products) {
 					$item['product'] = $products[$item['product_id']] ?? null;
 
@@ -225,7 +225,7 @@ class CartService
 				->where('user_id', auth()->id())
 				->when($cartKey, fn ($query) => $query->where('key', $cartKey))
 				->whereHas('product')
-				->with('product')
+				->with(['product.parentProduct', 'product.productVariationsValues.variationValue'])
 				->get();
 
 			if (!$cartKey) {
