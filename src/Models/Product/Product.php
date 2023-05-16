@@ -341,11 +341,11 @@ class Product extends Model
 	/**
 	 * Get product final unit price after discount
 	 *
-	 * @return integer|float
+	 * @return integer|float|null
 	 */
-	public function getFinalUnitPriceAttribute(): int|float
+	public function getFinalUnitPriceAttribute(): int|float|null
 	{
-		$finalUnitPrice = $this->discount_price === null ? $this->price : ($this->discount_price ?? 0);
+		$finalUnitPrice = $this->assigned_discount_price === null ? $this->assigned_price : ($this->assigned_discount_price ?? 0);
 
 		return $finalUnitPrice;
 	}
