@@ -238,6 +238,17 @@ class Product extends Model
 	}
 
 	/**
+	 * Scope parent products
+	 *
+	 * @param Builder $query
+	 * @return void
+	 */
+	public function scopeWhereIsParent(Builder $query): void
+	{
+		$query->where('parent_product_id', null);
+	}
+
+	/**
 	 * Scope purchasable products
 	 *
 	 * @param Builder $query
