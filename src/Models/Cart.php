@@ -10,10 +10,6 @@ class Cart extends Model
 {
 	protected $table = 'shop_cart';
 
-	protected $primaryKey = null;
-
-	public $incrementing = false;
-
 	protected $guarded = [];
 
 	/**
