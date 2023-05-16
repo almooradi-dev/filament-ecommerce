@@ -348,7 +348,7 @@ class CartService
 	{
 		$items = $items ?? $this->getAll($cartKey);
 
-		$shippingCost = 0;
+		$shippingCost = env('SHOP_SHIPPING_COST', 0); // TODO: Remove fixed shipping rate and make it dynamic from admin panel
 		$subtotal = 0;
 		foreach ($items as $item) {
 			$product = $item->product ?? Product::find($item->product_id);
