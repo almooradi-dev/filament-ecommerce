@@ -198,9 +198,9 @@ class Product extends Model
 	/**
 	 * Get final assigned price
 	 *
-	 * @return float|int
+	 * @return float|int|null
 	 */
-	public function getAssignedPriceAttribute(): float|int
+	public function getAssignedPriceAttribute(): float|int|null
 	{
 		if ($this->parent_product_id > 0 && $this->price === null) {
 			return $this->parentProduct?->price;
@@ -212,9 +212,9 @@ class Product extends Model
 	/**
 	 * Get final assigned discount price
 	 *
-	 * @return float|int
+	 * @return float|int|null
 	 */
-	public function getAssignedDiscountPriceAttribute(): float|int
+	public function getAssignedDiscountPriceAttribute(): float|int|null
 	{
 		if ($this->parent_product_id > 0 && $this->price === null) {
 			return $this->parentProduct?->discount_price;
