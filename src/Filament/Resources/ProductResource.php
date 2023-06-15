@@ -7,7 +7,6 @@ use Almooradi\FilamentEcommerce\Constants\ProductStatus;
 use Almooradi\FilamentEcommerce\Filament\Resources\ProductResource\Pages\CreateProduct;
 use Almooradi\FilamentEcommerce\Filament\Resources\ProductResource\Pages\EditProduct;
 use Almooradi\FilamentEcommerce\Filament\Resources\ProductResource\Pages\ListProducts;
-use Almooradi\FilamentEcommerce\Filament\Resources\ProductResource\Pages\ProductVariations;
 use Almooradi\FilamentEcommerce\Models\Product\Product;
 use Closure;
 use Filament\Forms\Components\ColorPicker;
@@ -18,19 +17,17 @@ use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Wizard\Step;
 use Filament\Resources\Form;
 use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use SevendaysDigital\FilamentNestedResources\Columns\ChildResourceLink;
+use Illuminate\Database\Eloquent\Builder;
 
 class ProductResource extends Resource
 {
@@ -225,5 +222,11 @@ class ProductResource extends Resource
         }
 
         $set('discount_price', $discount_price);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->where('parent_product_id', null);
     }
 }
