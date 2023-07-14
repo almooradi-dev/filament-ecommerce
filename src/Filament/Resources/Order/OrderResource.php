@@ -173,6 +173,11 @@ class OrderResource extends Resource
 				//
 			])
 			->actions([
+				Tables\Actions\Action::make('show')
+					->url(fn (Order $record): string => route('orders.show', $record)) // TODO: Change the way admin view the order's products and add permissions
+					->icon('heroicon-o-eye')
+					->color('success')
+					->openUrlInNewTab(),
 				Tables\Actions\EditAction::make(),
 				Tables\Actions\DeleteAction::make(),
 			])
